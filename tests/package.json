@@ -9,6 +9,7 @@
     "test:sql": "node sql-test.js",
     "e2e": "node e2e.js",
     "e2e:pg": "node e2e.js --pg",
+    "live": "node live-test.js",
     "test": "node crypto-vectors.js && node sql-test.js && node e2e.js && node e2e.js --pg"
   },
   "devDependencies": {

@@ -5,6 +5,8 @@ install) that links two computers through a **room**. Whatever you paste, type o
 drop on one computer shows up on the other, already on the clipboard, ready to
 paste. No more emailing things to yourself.
 
+**Live site:** https://clipshare-two.vercel.app (Vercel project `clipshare`).
+
 ```
  Computer A (host)                  Supabase                  Computer B (joiner)
  browser / installed app  ──HTTPS + WebSocket──▶  relay  ◀──HTTPS + WebSocket──  browser / installed app
@@ -95,6 +97,10 @@ $env:NODE_OPTIONS = '--use-system-ca'
 npx vercel deploy --prod
 ```
 
+The first deploy links the folder to a Vercel project (saved in `.vercel/`). Vercel
+project names must be lowercase, so if it complains about the name (the folder is
+called `ClipShare`), run `npx vercel deploy --prod --project clipshare` once.
+
 Option B: push the repository to GitHub, then **Add New > Project** on vercel.com
 and import it. Keep the framework preset at *Other* and leave the root directory as the
 repository root.
@@ -183,6 +189,17 @@ npm run e2e:pg      # the same, against the real setup.sql running in PGlite
 
 The e2e test runs under the CSP from `vercel.json`. Set `HEADED=1` to watch it, or
 `PW_CHANNEL=msedge` to use Edge.
+
+To check a deployment against its real Supabase project:
+
+```powershell
+npm run live -- https://clipshare-two.vercel.app
+```
+
+It reads the Supabase URL and key from the site's `config.js`, checks that `setup.sql` is
+installed and that Realtime works, then two browser "computers" exchange text and a 2.5 MB
+file in a new random room, which is cleared at the end. Behind a TLS-inspecting proxy, set
+`$env:NODE_OPTIONS = '--use-system-ca'` first.
 
 To try the app locally without a Supabase project:
 
