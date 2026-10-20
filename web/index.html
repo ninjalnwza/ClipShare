@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ClipShare</title>
+<meta name="description" content="Copy on one computer, paste on the other.">
+<meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+
+  <!-- ===================== Lobby ===================== -->
+  <section id="lobby" class="screen" hidden>
+    <div class="lobby-inner">
+      <div class="brand">
+        <img src="icons/icon-192.png" alt="" class="brand-icon" width="56" height="56">
+        <div>
+          <h1>ClipShare</h1>
+          <p class="tagline">Copy on one computer, paste on the other.</p>
+        </div>
+      </div>
+
+      <div id="config-warning" class="card warning" hidden>
+        <strong>Backend not configured.</strong>
+        <p>Open <code>config.js</code> and fill in your Supabase project URL and publishable key (see README).</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <h2>Start a room</h2>
+          <p>Create a room on this computer, then join it from the other one with the code.</p>
+          <button id="create-btn" class="btn primary big" type="button">Create room</button>
+        </div>
+        <form id="join-form" class="card" autocomplete="off">
+          <h2>Join a room</h2>
+          <p>Enter the code shown on the other computer.</p>
+          <input id="join-code" class="code-input" placeholder="XXXXX-XXXXX" maxlength="16" spellcheck="false"
+                 autocapitalize="characters" autocomplete="off" aria-label="Room code">
+          <button class="btn primary big" type="submit">Join</button>
+          <p id="join-error" class="error" hidden></p>
+        </form>
+      </div>
+
+      <div id="recent" class="card" hidden>
+        <h2>Recent rooms</h2>
+        <ul id="recent-list" class="recent-list"></ul>
+      </div>
+
+      <div class="lobby-footer">
+        <button id="install-btn" class="btn" type="button" hidden>Install as app</button>
+        <p class="fineprint">End-to-end encrypted with the room code. Items are deleted automatically after 3 days.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Room ===================== -->
+  <section id="room" class="screen" hidden>
+    <header class="topbar">
+      <button id="leave-btn" class="icon-btn" type="button" title="Leave room" aria-label="Leave room">&#8592;</button>
+      <button id="code-btn" class="room-code" type="button" title="Copy room code">
+        <span class="label">Room</span> <span id="room-code"></span>
+      </button>
+      <button id="invite-btn" class="btn small" type="button" title="Copy a link that joins this room">Copy invite link</button>
+      <div class="spacer"></div>
+      <div id="status" class="status" data-state="connecting" title="Connection">
+        <span class="dot"></span><span id="status-text">Connecting&hellip;</span>
+      </div>
+      <button id="settings-btn" class="icon-btn" type="button" title="Settings" aria-label="Settings">&#9881;</button>
+    </header>
+
+    <div id="peers" class="peers"></div>
+
+    <div id="alert" class="banner error-banner" hidden></div>
+
+    <div id="pending-banner" class="banner" hidden>
+      <span id="pending-text"></span>
+      <button id="pending-copy" class="btn small primary" type="button">Copy now</button>
+      <button id="pending-dismiss" class="icon-btn small" type="button" aria-label="Dismiss">&#10005;</button>
+    </div>
+
+    <div id="feed" class="feed">
+      <div id="empty" class="empty" hidden>
+        <div class="empty-code-label">Room code</div>
+        <div id="empty-code" class="empty-code"></div>
+        <p>On the other computer, open <strong id="empty-url"></strong> and join with this code,
+           or send yourself the invite link.</p>
+        <div class="empty-actions">
+          <button id="empty-copy-code" class="btn" type="button">Copy code</button>
+          <button id="empty-copy-link" class="btn" type="button">Copy invite link</button>
+        </div>
+        <p class="muted">Then copy something and press <kbd>Ctrl</kbd>+<kbd>V</kbd> on this page, drop files here,
+           or type below. It appears on the other computer, ready to paste.</p>
+      </div>
+      <div id="items" class="items" aria-live="polite"></div>
+      <div id="uploads" class="items"></div>
+    </div>
+
+    <form id="composer" class="composer" autocomplete="off">
+      <button type="button" id="attach-btn" class="icon-btn" title="Send files" aria-label="Send files">&#128206;</button>
+      <input type="file" id="file-input" multiple hidden>
+      <textarea id="message" rows="1" placeholder="Type or paste here. Enter sends, Shift+Enter adds a line."></textarea>
+      <button type="button" id="clip-btn" class="btn" title="Send what is on your clipboard (or press Ctrl+V anywhere on this page)">Send clipboard</button>
+      <button type="submit" id="send-btn" class="btn primary">Send</button>
+    </form>
+
+    <div id="drop" class="drop-overlay" hidden><div>Drop files to send</div></div>
+  </section>
+</main>
+
+<!-- ===================== Settings ===================== -->
+<dialog id="settings">
+  <form method="dialog" class="settings">
+    <h2>Settings</h2>
+    <label class="field">This device's name
+      <input id="device-name" maxlength="40" autocomplete="off">
+    </label>
+    <label class="toggle"><input type="checkbox" id="opt-autocopy">
+      <span>Copy received text and images to my clipboard automatically</span></label>
+    <label class="toggle"><input type="checkbox" id="opt-autodownload">
+      <span>Download received files automatically</span></label>
+    <label class="toggle"><input type="checkbox" id="opt-autosend">
+      <span>Send my clipboard automatically when I switch to this window</span></label>
+    <div class="row">
+      <button type="button" id="notify-btn" class="btn">Enable notifications</button>
+      <span id="notify-state" class="muted"></span>
+    </div>
+    <hr>
+    <div class="row">
+      <button type="button" id="clear-btn" class="btn danger">Delete everything in this room</button>
+    </div>
+    <p class="muted small">Tip: install this page as an app (browser menu &gt; Install ClipShare) so it
+      opens in its own window. Keep it open on both computers.</p>
+    <div class="row end"><button class="btn primary" value="close">Done</button></div>
+  </form>
+</dialog>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script src="js/crypto.js"></script>
+<script src="js/backend.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+# Only web/ is published (see vercel.json); don't upload the rest.
+tests/
+supabase/

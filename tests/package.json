@@ -1,0 +1,19 @@
+{
+  "name": "clipshare-tests",
+  "private": true,
+  "description": "Automated tests and a local mock backend for ClipShare",
+  "scripts": {
+    "mock": "node mock-server.js",
+    "mock:pg": "node mock-server.js --pg",
+    "test:crypto": "node crypto-vectors.js",
+    "test:sql": "node sql-test.js",
+    "e2e": "node e2e.js",
+    "e2e:pg": "node e2e.js --pg",
+    "test": "node crypto-vectors.js && node sql-test.js && node e2e.js && node e2e.js --pg"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
+    "playwright-core": "^1.64.1",
+    "ws": "^8.22.0"
+  }
+}
