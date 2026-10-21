@@ -2,6 +2,7 @@
   "name": "pasteport-tests",
   "private": true,
   "description": "Automated tests and a local mock backend for PastePort",
+  "license": "MIT",
   "scripts": {
     "mock": "node mock-server.js",
     "mock:pg": "node mock-server.js --pg",

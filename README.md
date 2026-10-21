@@ -224,3 +224,7 @@ npm run mock:pg     # same, backed by the real setup.sql in PGlite
 ```
 
 Open it in two windows (for example a normal and a private window) to play both computers.
+
+## License
+
+[MIT](LICENSE)
