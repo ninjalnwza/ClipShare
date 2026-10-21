@@ -1,5 +1,5 @@
 /*
- * ClipShare backend client: Supabase RPC + a small Supabase Realtime (Phoenix)
+ * PastePort backend client: Supabase RPC + a small Supabase Realtime (Phoenix)
  * client + the room sync logic. No external libraries.
  *
  * Data flow

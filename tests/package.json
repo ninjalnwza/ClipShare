@@ -1,7 +1,7 @@
 {
-  "name": "clipshare-tests",
+  "name": "pasteport-tests",
   "private": true,
-  "description": "Automated tests and a local mock backend for ClipShare",
+  "description": "Automated tests and a local mock backend for PastePort",
   "scripts": {
     "mock": "node mock-server.js",
     "mock:pg": "node mock-server.js --pg",

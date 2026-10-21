@@ -1,4 +1,4 @@
-/* ClipShare web app (UI). Uses window.ClipCrypto and window.ClipBackend. */
+/* PastePort web app (UI). Uses window.ClipCrypto and window.ClipBackend. */
 (function () {
   'use strict';
 
@@ -276,7 +276,7 @@
       }));
       return true;
     } catch (e) {
-      console.warn('[ClipShare] QR code:', e);
+      console.warn('[PastePort] QR code:', e);
       return false;
     }
   }
@@ -333,7 +333,7 @@
     room.on('connection', mine(setStatus));
     room.on('peers', mine((p) => { state.peers = p; renderPeers(); }));
     room.on('loaded', mine(() => { updateEmpty(); scrollToBottom(); }));
-    room.on('notice', (msg) => console.info('[ClipShare]', msg));
+    room.on('notice', (msg) => console.info('[PastePort]', msg));
     room.on('syncError', mine(onSyncError));
     rememberRoom(code);
     store.set('lastRoom', code);
@@ -372,7 +372,7 @@
 
   function onSyncError(e) {
     if (e && (e.status === 404 || e.code === 'PGRST202')) {
-      setAlert('The ClipShare database functions were not found. Run supabase/setup.sql in the Supabase SQL editor (see README).');
+      setAlert('The PastePort database functions were not found. Run supabase/setup.sql in the Supabase SQL editor (see README).');
     } else if (e && (e.status === 401 || e.status === 403)) {
       setAlert('The backend rejected the API key. Check supabaseKey in config.js.');
     } else if (e && e.code !== 'network') {
@@ -650,7 +650,7 @@
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     if (document.hasFocus()) return;
     try {
-      const n = new Notification('ClipShare: from ' + item.from, {
+      const n = new Notification('PastePort: from ' + item.from, {
         body: preview(item), tag: 'clipshare', icon: 'icons/icon-192.png',
       });
       n.onclick = () => { window.focus(); n.close(); };
@@ -673,13 +673,13 @@
     $('#pending-text').textContent = 'New ' + (item.kind === 'text' ? 'text' : 'image') + ' from ' + item.from +
       ': it will be copied when you switch to this window.';
     $('#pending-banner').hidden = false;
-    document.title = '(1) New clip - ClipShare';
+    document.title = '(1) New clip - PastePort';
   }
 
   function clearPending() {
     state.pending = null;
     $('#pending-banner').hidden = true;
-    document.title = 'ClipShare';
+    document.title = 'PastePort';
   }
 
   async function onFocus() {

@@ -507,7 +507,7 @@ if (require.main === module) {
   const pg = args.includes('--pg');
   const srv = createMockServer({ pg });
   srv.listen(port).then(({ url }) => {
-    console.log('ClipShare mock backend (' + (pg ? 'setup.sql in PGlite' : 'in memory') + ') + app: ' + url);
+    console.log('PastePort mock backend (' + (pg ? 'setup.sql in PGlite' : 'in memory') + ') + app: ' + url);
     console.log('Open it in two browser windows (or a normal and a private window) to try it.');
   });
 }

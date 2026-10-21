@@ -1,5 +1,5 @@
 /*
- * Live smoke test: a deployed ClipShare site and its real Supabase project.
+ * Live smoke test: a deployed PastePort site and its real Supabase project.
  *
  *   node live-test.js https://<your-site>.vercel.app
  *

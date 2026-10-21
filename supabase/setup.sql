@@ -1,5 +1,6 @@
 -- =============================================================================
--- ClipShare backend for Supabase
+-- PastePort backend for Supabase (the app was first called ClipShare, hence
+-- the "clipshare" schema; keep that name so existing rooms keep working)
 --
 -- How to install: Supabase Dashboard -> SQL Editor -> New query ->
 -- paste this whole file -> Run.  It is safe to run again later (idempotent).
@@ -449,4 +450,4 @@ grant execute on function public.clip_clear(text)                             to
 -- Make the API pick up the new functions immediately.
 notify pgrst, 'reload schema';
 
-select 'ClipShare backend installed' as status;
+select 'PastePort backend installed' as status;

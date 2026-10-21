@@ -1,6 +1,6 @@
 {
-  "name": "ClipShare",
-  "short_name": "ClipShare",
+  "name": "PastePort",
+  "short_name": "PastePort",
   "description": "Copy on one computer, paste on the other.",
   "start_url": "./",
   "scope": "./",

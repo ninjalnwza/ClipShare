@@ -1,5 +1,5 @@
 /*
- * ClipShare QR codes: a small QR Code encoder (ISO/IEC 18004, model 2) used to
+ * PastePort QR codes: a small QR Code encoder (ISO/IEC 18004, model 2) used to
  * show the invite link, so a phone can join a room by scanning it with its camera.
  *
  * Byte mode (UTF-8), versions 1-40, error correction L/M/Q/H, automatic or fixed

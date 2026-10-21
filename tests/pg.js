@@ -44,7 +44,7 @@ async function install(db, sql) {
   }
 }
 
-/** New in-memory database with the ClipShare backend installed. */
+/** New in-memory database with the PastePort backend installed. */
 async function openDb() {
   const PGlite = loadPGlite();
   const db = new PGlite();

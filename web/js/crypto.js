@@ -1,5 +1,5 @@
 /*
- * ClipShare crypto: room codes, key derivation and authenticated encryption.
+ * PastePort crypto: room codes, key derivation and authenticated encryption.
  *
  * Scheme v1 (tests/crypto-vectors.js checks it against Node's crypto module):
  *   code    = 10 Crockford base32 characters (50 bits), e.g. "7K2QM-XR4TD"
@@ -16,6 +16,7 @@
   const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
   const CODE_LENGTH = 10;
   const ITERATIONS = 200000;
+  // From the app's original name (ClipShare). Changing it would make existing rooms unreadable.
   const SALT = 'clipshare/v1';
   const VERSION = 1;
   const te = new TextEncoder();

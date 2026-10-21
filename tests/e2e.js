@@ -238,7 +238,7 @@ async function main() {
       await B.page.evaluate(() => { delete document.hasFocus; window.dispatchEvent(new Event('focus')); });
       await waitClipText(B.page, 'while you were away');
       await B.page.waitForSelector('#pending-banner', { state: 'hidden' });
-      assert.strictEqual(await B.page.title(), 'ClipShare');
+      assert.strictEqual(await B.page.title(), 'PastePort');
     });
 
     await step('auto-send clipboard on focus, without echoing received items back', async () => {

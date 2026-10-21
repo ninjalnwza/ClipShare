@@ -1,11 +1,12 @@
-# ClipShare
+# PastePort
 
-Copy on one computer, paste on the other. ClipShare is a small web app (nothing to
+Copy on one computer, paste on the other. PastePort is a small web app (nothing to
 install) that links two computers through a **room**. Whatever you paste, type or
 drop on one computer shows up on the other, already on the clipboard, ready to
 paste. No more emailing things to yourself.
 
-**Live site:** https://clipshare-two.vercel.app (Vercel project `clipshare`).
+**Live site:** https://pasteport.vercel.app (Vercel project `pasteport`). The old address,
+https://clipshare-two.vercel.app, redirects there.
 
 ```
  Computer A (host)                  Supabase                  Computer B (joiner)
@@ -35,8 +36,8 @@ different networks, VPNs and firewalls. No LAN, port forwarding or admin rights 
    stays in the room's feed with Copy / Download / Delete buttons.
 
 **Browser limitation:** a web page may only write to the clipboard while its window is
-focused. If ClipShare is in the background when something arrives, the title and a banner
-tell you, and the item is copied as soon as you switch to the ClipShare window (Alt+Tab).
+focused. If PastePort is in the background when something arrives, the title and a banner
+tell you, and the item is copied as soon as you switch to the PastePort window (Alt+Tab).
 
 Tips:
 
@@ -51,7 +52,7 @@ Tips:
   - auto-copy received text/images (on)
   - auto-download received files (on)
   - **send my clipboard automatically when I switch to this window** (off). With this on,
-    the flow is: copy in any program, Alt+Tab to ClipShare, done.
+    the flow is: copy in any program, Alt+Tab to PastePort, done.
   - desktop notifications
   - delete everything in the room
 - Status in the top bar:
@@ -104,8 +105,8 @@ npx vercel deploy --prod
 ```
 
 The first deploy links the folder to a Vercel project (saved in `.vercel/`). Vercel
-project names must be lowercase, so if it complains about the name (the folder is
-called `ClipShare`), run `npx vercel deploy --prod --project clipshare` once.
+project names must be lowercase, so if it complains about the name (for example when the
+folder is called `PastePort`), run `npx vercel deploy --prod --project pasteport` once.
 
 Option B: push the repository to GitHub, then **Add New > Project** on vercel.com
 and import it. Keep the framework preset at *Other* and leave the root directory as the
@@ -162,7 +163,7 @@ the dashboard if the app suddenly can't connect.
 | "Invalid API key" / 401 errors | Use the project URL and the *publishable* (or anon) key of the same project. |
 | Errors about missing `clip_*` functions | Run `supabase/setup.sql` in the SQL Editor. |
 | Always "Connected (polling)" | WebSockets are blocked by a proxy/firewall, or public Realtime channels are disabled. It still works, with a few seconds of delay. |
-| Received text isn't on the clipboard | Switch to the ClipShare window. Browsers only allow clipboard writes in a focused window. |
+| Received text isn't on the clipboard | Switch to the PastePort window. Browsers only allow clipboard writes in a focused window. |
 | "Send clipboard" / auto-send does nothing | Allow the browser's clipboard permission for the site (lock icon in the address bar). |
 
 ## Project layout
@@ -178,6 +179,10 @@ supabase/setup.sql   database schema, functions, limits, permissions
 vercel.json          publishing + security headers
 tests/               automated tests and a local mock backend
 ```
+
+The app was first called ClipShare. Internal names (the `clipshare` database schema,
+`CLIPSHARE_CONFIG`, the encryption salt, Realtime topics and browser storage keys) keep
+that name so existing rooms and setups keep working.
 
 ## Development and tests
 
@@ -201,7 +206,7 @@ The e2e test runs under the CSP from `vercel.json`. Set `HEADED=1` to watch it, 
 To check a deployment against its real Supabase project:
 
 ```powershell
-npm run live -- https://clipshare-two.vercel.app
+npm run live -- https://pasteport.vercel.app
 ```
 
 It reads the Supabase URL and key from the site's `config.js`, checks that `setup.sql` is

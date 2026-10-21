@@ -158,7 +158,7 @@ function main() {
   }
 
   // Text is encoded as UTF-8; version follows the length.
-  for (const text of ['a', 'Hello, ClipShare!', 'สวัสดีครับ ClipShare \u{1F4CB}', 'x'.repeat(500), '\u20AC'.repeat(300)]) {
+  for (const text of ['a', 'Hello, PastePort!', 'สวัสดีครับ PastePort \u{1F4CB}', 'x'.repeat(500), '\u20AC'.repeat(300)]) {
     const qr = Q.encode(text);
     const res = decode(qr);
     assert.ok(res, 'no QR code found for ' + JSON.stringify(text.slice(0, 20)));
@@ -171,7 +171,7 @@ function main() {
   sameAsReference(empty, new Uint8Array(0), 'empty text');
 
   // The invite link the app shows: version 4 (33 x 33) at level M.
-  const link = 'https://clipshare-two.vercel.app/#join=7K2QM-XR4TD';
+  const link = 'https://pasteport.vercel.app/#join=7K2QM-XR4TD';
   const invite = Q.encode(link);
   assert.deepStrictEqual([invite.version, invite.ecl], [4, 'M']);
   assert.strictEqual(decode(invite).data, link);
