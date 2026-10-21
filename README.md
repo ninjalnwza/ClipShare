@@ -18,9 +18,12 @@ different networks, VPNs and firewalls. No LAN, port forwarding or admin rights 
 
 ## Using it
 
-1. On computer A open the site and click **Create room**. You get a code like `7KQ2M-9XD4P`.
-2. On computer B open the same site, type the code and click **Join**
-   (or open the invite link from **Copy invite link**).
+1. On computer A open the site and click **Create room**. You get a code like `7KQ2M-9XD4P`
+   and a QR code.
+2. On computer B open the same site, type the code and click **Join**.
+   On a phone, scan the QR code with the camera app instead; the link opens the room
+   directly. The code, the QR code and the invite link are also under **Invite** in the
+   top bar.
 3. Send something from either side:
    - press **Ctrl+V** anywhere on the page: text, formatted text, screenshots, and files
      copied in File Explorer (Chrome/Edge)
@@ -40,6 +43,9 @@ Tips:
 - Install it as an app (the **Install as app** button on the start page, or the browser
   menu) so it has its own window and taskbar icon. Keep it open on both computers.
 - The room is remembered: reopening the app goes straight back into it.
+- Phones work too, and more than two devices can be in the same room. Phone browsers are stricter
+  about the clipboard, especially on iPhone: if something received isn't on the
+  clipboard, tap its **Copy** button.
 - Settings (gear icon):
   - device name
   - auto-copy received text/images (on)
@@ -167,6 +173,7 @@ web/                 the app: static HTML/CSS/JS, installable (PWA)
   js/crypto.js       room-code key derivation and encryption
   js/backend.js      Supabase RPC + Realtime client, sync, chunked file transfer
   js/app.js          UI, clipboard, paste/drop, settings
+  js/qr.js           QR code generator for the invite link
 supabase/setup.sql   database schema, functions, limits, permissions
 vercel.json          publishing + security headers
 tests/               automated tests and a local mock backend
@@ -182,8 +189,9 @@ cd tests
 npm install
 npm test            # all of the below
 npm run test:crypto # crypto test vectors
+npm run test:qr     # QR encoder vs. the qrcode package, every symbol decoded with jsQR
 npm run test:sql    # setup.sql on real PostgreSQL (PGlite, in-process)
-npm run e2e         # two browser "computers" against the in-memory mock backend
+npm run e2e         # two browser "computers" and a phone against the in-memory mock backend
 npm run e2e:pg      # the same, against the real setup.sql running in PGlite
 ```
 
@@ -198,7 +206,8 @@ npm run live -- https://clipshare-two.vercel.app
 
 It reads the Supabase URL and key from the site's `config.js`, checks that `setup.sql` is
 installed and that Realtime works, then two browser "computers" exchange text and a 2.5 MB
-file in a new random room, which is cleared at the end. Behind a TLS-inspecting proxy, set
+file in a new random room and an emulated phone joins it by its QR code. The room is
+cleared at the end. Behind a TLS-inspecting proxy, set
 `$env:NODE_OPTIONS = '--use-system-ca'` first.
 
 To try the app locally without a Supabase project:

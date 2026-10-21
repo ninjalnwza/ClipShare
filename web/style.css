@@ -157,6 +157,11 @@ kbd {
   letter-spacing: .1em; margin: 4px 0 10px; user-select: all;
 }
 .empty-actions { display: flex; gap: 8px; justify-content: center; margin: 12px 0; }
+.qr-figure { margin: 18px auto 6px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.qr-figure figcaption { color: var(--muted); font-size: .9em; }
+/* QR codes stay black on white (see qr.js) in dark mode too; cameras need the contrast. */
+.qr svg { display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; }
+.ico { width: 18px; height: 18px; flex: none; }
 
 .item { display: flex; flex-direction: column; gap: 4px; max-width: 80%; align-self: flex-start; }
 .item.mine { align-self: flex-end; align-items: flex-end; }
@@ -201,7 +206,17 @@ kbd {
 }
 .composer textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .composer .btn { height: 40px; }
-@media (max-width: 560px) { #clip-btn { display: none; } #invite-btn { display: none; } }
+@media (max-width: 560px) {
+  #clip-btn { display: none; }
+  #invite-btn .btn-label, .room-code .label { display: none; }
+  /* Keep the top bar on one line: the status takes the space left and truncates long states. */
+  .topbar { gap: 6px; padding: 8px; }
+  .topbar .spacer { display: none; }
+  .status { flex: 1 1 0; min-width: 0; justify-content: flex-end; }
+  .status .dot { flex: none; }
+  #status-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+@media (max-width: 340px) { #room-code { font-size: 15px; letter-spacing: .04em; } }
 
 .drop-overlay {
   position: absolute; inset: 8px; border: 3px dashed var(--accent); border-radius: 16px;
@@ -224,6 +239,14 @@ dialog::backdrop { background: rgba(0, 0, 0, .35); }
 .toggle input { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--accent); }
 .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .row.end { justify-content: flex-end; }
+.row.center { justify-content: center; }
+.invite { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; text-align: center; }
+.invite h2, .invite p { margin: 0; }
+.invite .qr { display: flex; justify-content: center; }
+.invite-code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 30px; font-weight: 700;
+  letter-spacing: .1em; user-select: all;
+}
 
 .toasts {
   position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); z-index: 20;

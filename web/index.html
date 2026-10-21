@@ -33,12 +33,12 @@
       <div class="cards">
         <div class="card">
           <h2>Start a room</h2>
-          <p>Create a room on this computer, then join it from the other one with the code.</p>
+          <p>Create a room on this computer, then join it from the other one with the code, or scan its QR code with a phone.</p>
           <button id="create-btn" class="btn primary big" type="button">Create room</button>
         </div>
         <form id="join-form" class="card" autocomplete="off">
           <h2>Join a room</h2>
-          <p>Enter the code shown on the other computer.</p>
+          <p>Enter the code shown on the other computer, or scan its QR code with your phone's camera.</p>
           <input id="join-code" class="code-input" placeholder="XXXXX-XXXXX" maxlength="16" spellcheck="false"
                  autocapitalize="characters" autocomplete="off" aria-label="Room code">
           <button class="btn primary big" type="submit">Join</button>
@@ -65,7 +65,10 @@
       <button id="code-btn" class="room-code" type="button" title="Copy room code">
         <span class="label">Room</span> <span id="room-code"></span>
       </button>
-      <button id="invite-btn" class="btn small" type="button" title="Copy a link that joins this room">Copy invite link</button>
+      <button id="invite-btn" class="btn small" type="button" title="Show a QR code and link that join this room" aria-label="Invite">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" fill-rule="evenodd"><path d="M3 3h8v8H3zM5 5h4v4H5zM6 6h2v2H6zM13 3h8v8h-8zM15 5h4v4h-4zM16 6h2v2h-2zM3 13h8v8H3zM5 15h4v4H5zM6 16h2v2H6zM13 13h3v3h-3zM18 13h3v3h-3zM16 16h2v2h-2zM13 18h3v3h-3zM18 18h3v3h-3z"/></svg>
+        <span class="btn-label">Invite</span>
+      </button>
       <div class="spacer"></div>
       <div id="status" class="status" data-state="connecting" title="Connection">
         <span class="dot"></span><span id="status-text">Connecting&hellip;</span>
@@ -93,6 +96,10 @@
           <button id="empty-copy-code" class="btn" type="button">Copy code</button>
           <button id="empty-copy-link" class="btn" type="button">Copy invite link</button>
         </div>
+        <figure id="empty-qr" class="qr-figure" hidden>
+          <div class="qr"></div>
+          <figcaption>On a phone? Scan this with the camera to join.</figcaption>
+        </figure>
         <p class="muted">Then copy something and press <kbd>Ctrl</kbd>+<kbd>V</kbd> on this page, drop files here,
            or type below. It appears on the other computer, ready to paste.</p>
       </div>
@@ -139,11 +146,27 @@
   </form>
 </dialog>
 
+<!-- ===================== Invite ===================== -->
+<dialog id="invite" aria-labelledby="invite-title">
+  <form method="dialog" class="invite">
+    <h2 id="invite-title">Invite a device</h2>
+    <div id="invite-qr" class="qr"></div>
+    <p id="invite-hint" class="muted"></p>
+    <div id="invite-code" class="invite-code"></div>
+    <div class="row center">
+      <button type="button" id="invite-copy-code" class="btn">Copy code</button>
+      <button type="button" id="invite-copy-link" class="btn">Copy invite link</button>
+    </div>
+    <div class="row end"><button class="btn primary" value="close">Done</button></div>
+  </form>
+</dialog>
+
 <div id="toasts" class="toasts" aria-live="polite"></div>
 
 <script src="config.js"></script>
 <script src="js/crypto.js"></script>
 <script src="js/backend.js"></script>
+<script src="js/qr.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

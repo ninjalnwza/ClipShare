@@ -14,9 +14,10 @@ const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { chromium } = require('playwright-core');
+const { chromium, devices } = require('playwright-core');
 const { createMockServer } = require('./mock-server');
 const { fakeClipboard, presetName } = require('./page-helpers');
+const { decodeQr } = require('./qr-decode');
 
 const sha256 = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -34,8 +35,8 @@ async function main() {
   const pageErrors = [];
   const results = [];
 
-  async function device(name) {
-    const ctx = await browser.newContext({ acceptDownloads: true, viewport: { width: 1000, height: 760 } });
+  async function device(name, extra) {
+    const ctx = await browser.newContext({ acceptDownloads: true, viewport: { width: 1000, height: 760 }, ...extra });
     await ctx.addInitScript(fakeClipboard);
     await ctx.addInitScript(presetName, name);
     const page = await ctx.newPage();
@@ -76,6 +77,7 @@ async function main() {
   const A = await device('PC-A');
   const B = await device('PC-B');
   let code = '';
+  let qrLink = '';
 
   try {
     await step('lobby loads with backend configured, under the vercel.json CSP', async () => {
@@ -94,6 +96,8 @@ async function main() {
       await A.page.waitForSelector('#empty:not([hidden])');
       assert.strictEqual((await A.page.textContent('#empty-code')).trim(), code);
       assert.match(await A.page.textContent('#peers'), /Waiting for the other computer/);
+      qrLink = await decodeQr(A.page.locator('#empty-qr svg'));
+      assert.strictEqual(qrLink, url + '/#join=' + code);
     });
 
     await step('joiner enters the code (lowercase, no dash) and both see each other', async () => {
@@ -116,6 +120,47 @@ async function main() {
       await itemWith(A.page, 'hello from B').waitFor({ timeout: 5000 });
       await waitClipText(A.page, 'hello from B');
       assert.ok(!(await itemWith(A.page, 'hello from B').evaluate((n) => n.classList.contains('mine'))));
+    });
+
+    await step('phone (Pixel 7, dark mode) opens the scanned QR link, joins and sends text', async () => {
+      const P = await device('Phone', { ...devices['Pixel 7'], colorScheme: 'dark' });
+      await P.page.goto(qrLink);
+      await P.page.waitForSelector('#room:not([hidden])');
+      assert.strictEqual((await P.page.textContent('#room-code')).trim(), code);
+      await waitStatus(P.page, 'live');
+      await A.page.waitForFunction(() => /Phone/.test(document.querySelector('#peers').textContent));
+      await itemWith(P.page, 'hello from B').waitFor({ timeout: 5000 });
+      assert.ok(await P.page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'page scrolls sideways');
+      assert.ok((await P.page.locator('.topbar').boundingBox()).height < 60, 'top bar wraps onto two lines');
+      await P.page.setViewportSize({ width: 360, height: 760 });
+      assert.ok(await P.page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'page scrolls sideways at 360 px');
+      assert.ok((await P.page.locator('.topbar').boundingBox()).height < 60, 'top bar wraps onto two lines at 360 px');
+      assert.ok(await P.page.isVisible('#invite-btn'));
+      assert.ok(await P.page.isHidden('#invite-btn .btn-label'));
+      await sendChat(P.page, 'sent from the phone');
+      await itemWith(A.page, 'sent from the phone').waitFor({ timeout: 5000 });
+      await waitClipText(A.page, 'sent from the phone');
+      await P.page.click('#invite-btn');
+      await P.page.waitForSelector('#invite[open]');
+      assert.strictEqual(await decodeQr(P.page.locator('#invite-qr svg')), qrLink);
+      await P.page.click('#invite button[value="close"]');
+      await P.page.waitForSelector('#invite', { state: 'hidden' });
+      await P.page.click('#leave-btn');
+      await P.page.waitForSelector('#lobby:not([hidden])');
+      await P.ctx.close();
+      await A.page.waitForFunction(() => !/Phone/.test(document.querySelector('#peers').textContent));
+    });
+
+    await step('Invite button shows the code and QR code; Copy invite link copies the link', async () => {
+      await A.page.click('#invite-btn');
+      await A.page.waitForSelector('#invite[open]');
+      assert.strictEqual((await A.page.textContent('#invite-code')).trim(), code);
+      assert.strictEqual(await decodeQr(A.page.locator('#invite-qr svg')), qrLink);
+      await A.page.click('#invite-copy-link');
+      await waitClipText(A.page, qrLink);
+      await A.page.waitForFunction(() => document.querySelector('#invite-copy-link').textContent === 'Copied');
+      await A.page.mouse.click(5, 5);
+      await A.page.waitForSelector('#invite', { state: 'hidden' });
     });
 
     await step('Ctrl+V on the page sends rich text; receiver gets text + html, page shows plain text', async () => {

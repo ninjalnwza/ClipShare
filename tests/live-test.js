@@ -6,7 +6,8 @@
  * Takes the Supabase URL and key from the site's own config.js, checks that
  * supabase/setup.sql is installed and that Realtime works, then two browser
  * "computers" (system Chrome, fake in-page clipboard) exchange text and a file
- * in a new random room. That room is cleared at the end; nothing else is
+ * in a new random room, and an emulated phone joins it through its QR code.
+ * That room is cleared at the end; nothing else is
  * touched. HEADED=1 to watch, PW_CHANNEL=msedge to use Edge. Behind a
  * TLS-inspecting proxy, set NODE_OPTIONS=--use-system-ca first.
  */
@@ -18,8 +19,9 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const WebSocket = require('ws');
-const { chromium } = require('playwright-core');
+const { chromium, devices } = require('playwright-core');
 const { fakeClipboard, presetName } = require('./page-helpers');
+const { decodeQr } = require('./qr-decode');
 
 const sha256 = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
 
@@ -89,10 +91,11 @@ async function main() {
   const results = [];
   let cfg = null;
   let code = '';
+  let qrLink = '';
   let cleared = false;
 
-  async function device(name) {
-    const ctx = await browser.newContext({ acceptDownloads: true, viewport: { width: 1000, height: 760 } });
+  async function device(name, extra) {
+    const ctx = await browser.newContext({ acceptDownloads: true, viewport: { width: 1000, height: 760 }, ...extra });
     await ctx.addInitScript(fakeClipboard);
     await ctx.addInitScript(presetName, name);
     const page = await ctx.newPage();
@@ -198,6 +201,8 @@ async function main() {
       console.log('        room ' + code);
       await waitLive(A.page);
       await A.page.waitForSelector('#empty:not([hidden])');
+      qrLink = await decodeQr(A.page.locator('#empty-qr svg'));
+      assert.strictEqual(qrLink, site + '/#join=' + code);
     });
 
     await step('joiner enters the code and both computers see each other', async () => {
@@ -220,6 +225,27 @@ async function main() {
         console.log('        arrived after ' + (Date.now() - t0) + ' ms');
       });
     }
+
+    await step('phone (Pixel 7) opens the scanned QR link, joins and sends text', async () => {
+      const P = await device('LiveTest-Phone', devices['Pixel 7']);
+      try {
+        await P.page.goto(qrLink);
+        await P.page.waitForSelector('#room:not([hidden])');
+        assert.strictEqual((await P.page.textContent('#room-code')).trim(), code);
+        await waitLive(P.page);
+        await A.page.waitForFunction(() => /LiveTest-Phone/.test(document.querySelector('#peers').textContent), null, { timeout: 15000 });
+        await P.page.waitForFunction(() => document.querySelectorAll('#items .item').length >= 2, null, { timeout: 15000 });
+        const text = 'hello from the phone ' + crypto.randomBytes(4).toString('hex');
+        await sendChat(P.page, text);
+        await itemWith(A.page, text).waitFor({ timeout: 15000 });
+        await waitClipText(A.page, text);
+        await P.page.click('#leave-btn');
+        await P.page.waitForSelector('#lobby:not([hidden])');
+      } finally {
+        await P.ctx.close();
+      }
+      await A.page.waitForFunction(() => !/LiveTest-Phone/.test(document.querySelector('#peers').textContent), null, { timeout: 15000 });
+    });
 
     await step('file (2.5 MB, 3 chunks) arrives byte-identical', async () => {
       const data = crypto.randomBytes(2.5 * 1024 * 1024);

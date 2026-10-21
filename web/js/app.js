@@ -243,8 +243,10 @@
       await writeClipboardText(text, '');
       await rememberClipboard({ text });
       toast((what || 'Text') + ' copied', 'ok');
+      return true;
     } catch (e) {
       toast('Could not copy: ' + e.message, 'error');
+      return false;
     }
   }
 
@@ -262,6 +264,21 @@
 
   function appUrl() {
     return location.protocol === 'file:' ? 'this page' : location.host + location.pathname.replace(/index\.html$/, '');
+  }
+
+  /** Puts a QR code of the room's invite link in `box`. Not shown for file:// pages, which a phone can't open. */
+  function renderQr(box, code, moduleSize) {
+    box.textContent = '';
+    if (!window.ClipQR || !/^https?:$/.test(location.protocol)) return false;
+    try {
+      box.appendChild(window.ClipQR.svg(inviteLink(code), {
+        moduleSize, label: 'QR code that joins room ' + C.formatCode(code),
+      }));
+      return true;
+    } catch (e) {
+      console.warn('[ClipShare] QR code:', e);
+      return false;
+    }
   }
 
   function renderLobby() {
@@ -334,6 +351,7 @@
     for (const url of state.urls.values()) URL.revokeObjectURL(url);
     state.urls.clear();
     if (state.observer) { state.observer.disconnect(); state.observer = null; }
+    if ($('#invite').open) $('#invite').close();
     if (!keepLast) store.del('lastRoom');
   }
 
@@ -341,6 +359,7 @@
     $('#room-code').textContent = C.formatCode(code);
     $('#empty-code').textContent = C.formatCode(code);
     $('#empty-url').textContent = appUrl();
+    $('#empty-qr').hidden = !renderQr($('#empty-qr .qr'), code, 4);
     $('#items').textContent = '';
     $('#uploads').textContent = '';
     $('#empty').hidden = true;
@@ -854,6 +873,40 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Invite
+  // ---------------------------------------------------------------------------
+  const labelTimers = new WeakMap();
+
+  function openInvite() {
+    if (!state.room) return;
+    const code = state.room.code;
+    const qr = renderQr($('#invite-qr'), code, 6);
+    $('#invite-qr').hidden = !qr;
+    $('#invite-hint').textContent = qr
+      ? 'Scan this with a phone\u2019s camera, or enter this code on the other device:'
+      : 'Enter this code on the other device, or send it the invite link:';
+    $('#invite-code').textContent = C.formatCode(code);
+    for (const b of document.querySelectorAll('#invite button[data-label]')) b.textContent = b.dataset.label;
+    $('#invite').showModal();
+  }
+
+  /** Copies from inside the invite dialog. Toasts sit behind the modal backdrop, so the button shows the result. */
+  async function copyFromDialog(btn, text, what) {
+    const ok = await copyPlain(text, what);
+    if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+    btn.textContent = ok ? 'Copied' : 'Could not copy';
+    clearTimeout(labelTimers.get(btn));
+    labelTimers.set(btn, setTimeout(() => { btn.textContent = btn.dataset.label; }, 1500));
+  }
+
+  /** Closes a modal dialog when a click both starts and ends on its backdrop. */
+  function closeOnBackdrop(dialog) {
+    let fromBackdrop = false;
+    dialog.addEventListener('pointerdown', (e) => { fromBackdrop = e.target === dialog; });
+    dialog.addEventListener('click', (e) => { if (fromBackdrop && e.target === dialog) dialog.close(); });
+  }
+
+  // ---------------------------------------------------------------------------
   // Wiring
   // ---------------------------------------------------------------------------
   function formatCodeInput(input) {
@@ -889,8 +942,11 @@
     const copyLink = () => state.room && copyPlain(inviteLink(state.room.code), 'Invite link');
     $('#code-btn').addEventListener('click', copyCode);
     $('#empty-copy-code').addEventListener('click', copyCode);
-    $('#invite-btn').addEventListener('click', copyLink);
     $('#empty-copy-link').addEventListener('click', copyLink);
+    $('#invite-btn').addEventListener('click', openInvite);
+    $('#invite-copy-code').addEventListener('click', (e) => state.room && copyFromDialog(e.currentTarget, C.formatCode(state.room.code), 'Room code'));
+    $('#invite-copy-link').addEventListener('click', (e) => state.room && copyFromDialog(e.currentTarget, inviteLink(state.room.code), 'Invite link'));
+    closeOnBackdrop($('#invite'));
     $('#settings-btn').addEventListener('click', openSettings);
     $('#pending-copy').addEventListener('click', () => state.pending && copyItem(state.pending, false));
     $('#pending-dismiss').addEventListener('click', clearPending);

@@ -6,15 +6,19 @@
     "mock": "node mock-server.js",
     "mock:pg": "node mock-server.js --pg",
     "test:crypto": "node crypto-vectors.js",
+    "test:qr": "node qr-test.js",
     "test:sql": "node sql-test.js",
     "e2e": "node e2e.js",
     "e2e:pg": "node e2e.js --pg",
     "live": "node live-test.js",
-    "test": "node crypto-vectors.js && node sql-test.js && node e2e.js && node e2e.js --pg"
+    "test": "node crypto-vectors.js && node qr-test.js && node sql-test.js && node e2e.js && node e2e.js --pg"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.10",
+    "jsqr": "^1.4.0",
     "playwright-core": "^1.64.1",
+    "pngjs": "^7.0.0",
+    "qrcode": "^1.5.4",
     "ws": "^8.22.0"
   }
 }
